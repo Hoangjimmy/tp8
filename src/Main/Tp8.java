@@ -8,6 +8,7 @@ package Main;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,18 +34,15 @@ public class Tp8 {
 	public static void hppMaker(String className) {
 
 		File f = new File(className + ".hpp");
-		StringBuilder sb = new StringBuilder();
 
 		try {
 			Class c = Class.forName(className);
 			try {
-				FileWriter writer = new FileWriter(f, true);
-				sb = sb.append("class ").append(className).append(" { \n").append("private : \n");
-				Method[] meth = c.getMethods();
-				for (int i = 0; i < 6; ++i)
-					sb.append(meth[i].toString().replace("public","")).append(";\n");
-				sb.append("}");
-				writer.write(sb.toString());
+				Field[] fi = c.getDeclaredFields();
+				Method[] meth = c.getDeclaredMethods();
+				FileWriter writer = new FileWriter(f, false);
+
+				writer.write(hppFormating(className, meth, fi));
 				writer.flush();
 				writer.close();
 
@@ -56,6 +54,35 @@ public class Tp8 {
 
 		}
 
+	}
+
+	public static String hppFormating(String className, Method[] meth, Field[] fi) {
+
+		StringBuilder sb = new StringBuilder();
+		String s;
+
+		sb = sb.append("class ").append(className).append(" { \n").append("\tprivate : \n");
+		for (int i = 0; i < fi.length; ++i){
+			sb.append("\t\t")
+					.append(fi[i].toString()
+							.replace("private", "")
+							.replace("boolean", "bool")
+							.replace("java.lang.String", "string")
+							.replace(className + ".", ""))
+					.append(";\n");
+		}
+		sb.append("\tpublic : \n");
+		for (int i = 0; i < meth.length; ++i){
+			sb.append("\t\t")
+					.append(meth[i].toString()
+							.replace("public", "")
+							.replace("java.lang.String", "string")
+							.replace("boolean", "bool")
+							.replace(className + ".", ""))
+					.append(";\n");
+		}
+		sb.append("};");
+		return sb.toString();
 	}
 
 }
