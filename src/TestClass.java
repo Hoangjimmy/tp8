@@ -1,3 +1,6 @@
+
+import java.util.ArrayList;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -13,7 +16,7 @@ public class TestClass {
 	private int a;
 	private long b;
 	private String c;
-
+	ArrayList<String> arr ;
 	/**
 	 * @return the a
 	 */

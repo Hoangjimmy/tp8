@@ -24,45 +24,51 @@ public class Tp8 {
 	 */
 	public static void main(String[] args) {
 
-		if (args.length < 1)
-			System.out.println("Usage tp8 <JavaClassName> <GeneratedC++ClassName>");
+		if (args.length < 1 || args.length > 3)
+			System.out.println("Usage tp8 <JavaClassName> <GeneratedC++ClassName> <--stdout>");
 		else
-			hppMaker(args[0]);
+			try {
+				Class c = Class.forName(args[0]);
+				if (args.length < 2 || (args.length < 3 && args[1] != "--stdout"))
+					hppMaker(c.getName(), c);
+				else
+					hppMaker(args[1], c);
+				/*if ("--stdout".compareTo(args[2])> 0) {
+					System.out.println(hppFormating(c.getName(), c));
+				}*/
+			} catch (ClassNotFoundException ex) {
+				System.err.println("Class not found");
+			}
 
 	}
 
-	public static void hppMaker(String className) {
+	public static void hppMaker(String className, Class c) {
 
 		File f = new File(className + ".hpp");
 
 		try {
-			Class c = Class.forName(className);
-			try {
-				Field[] fi = c.getDeclaredFields();
-				Method[] meth = c.getDeclaredMethods();
-				FileWriter writer = new FileWriter(f, false);
 
-				writer.write(hppFormating(className, meth, fi));
-				writer.flush();
-				writer.close();
+			FileWriter writer = new FileWriter(f, false);
 
-			} catch (IOException ex2) {
-				Logger.getLogger(Tp8.class.getName()).log(Level.SEVERE, null, ex2);
-			}
-		} catch (ClassNotFoundException ex) {
-			ex.printStackTrace();
+			writer.write(hppFormating(className, c));
+			writer.flush();
+			writer.close();
 
+		} catch (IOException ex2) {
+			Logger.getLogger(Tp8.class.getName()).log(Level.SEVERE, null, ex2);
 		}
 
 	}
 
-	public static String hppFormating(String className, Method[] meth, Field[] fi) {
+	public static String hppFormating(String className, Class c) {
 
 		StringBuilder sb = new StringBuilder();
 		String s;
+		Field[] fi = c.getDeclaredFields();
+		Method[] meth = c.getDeclaredMethods();
 
 		sb = sb.append("class ").append(className).append(" { \n").append("\tprivate : \n");
-		for (int i = 0; i < fi.length; ++i){
+		for (int i = 0; i < fi.length; ++i)
 			sb.append("\t\t")
 					.append(fi[i].toString()
 							.replace("private", "")
@@ -70,9 +76,8 @@ public class Tp8 {
 							.replace("java.lang.String", "string")
 							.replace(className + ".", ""))
 					.append(";\n");
-		}
 		sb.append("\tpublic : \n");
-		for (int i = 0; i < meth.length; ++i){
+		for (int i = 0; i < meth.length; ++i)
 			sb.append("\t\t")
 					.append(meth[i].toString()
 							.replace("public", "")
@@ -80,7 +85,6 @@ public class Tp8 {
 							.replace("boolean", "bool")
 							.replace(className + ".", ""))
 					.append(";\n");
-		}
 		sb.append("};");
 		return sb.toString();
 	}
